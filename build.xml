@@ -1,0 +1,31 @@
+<project name="MyProject" default="dist" basedir=".">
+    <description>
+        simple example build file
+    </description>
+    <!-- set global properties for this build -->
+    <property name="src" location="src"/>
+    <property name="bots" location="botjars"/>
+    <property name="tools" location="lib"/>
+    <propertyfile  file="build.properties"/>
+    <property name="bot.one" value="&quot;java -jar botjars/DualBot.jar&quot;"/>
+    <property name="bot.two" value="&quot;java -jar botjars/DualBot.jar&quot;"/>
+    <target name="fight">
+        <java jar="lib/PlayGame.jar" output="game.txt" fork="true" dir="." >
+            <arg value="maps/map43.txt 1000 1000 log.txt ${bot.one} ${bot.two}"/>
+        </java>
+
+    </target>
+
+    <target name="dist">
+        <jar file="${bots}/CurrentBot.jar">
+            <manifest>
+
+            </manifest>
+            <include>
+
+            </include>
+        </jar>
+    </target>
+
+
+</project>
