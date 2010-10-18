@@ -4,6 +4,8 @@ import java.util.logging.Logger;
 
 public class MyBotMain {
 
+    private static final Logger LOG = Logger.getLogger("MAIN");
+
     public static void main(String[] args)  throws Exception{
         final Bot bot = new Bot();
         StringBuffer line = new StringBuffer();
@@ -16,7 +18,6 @@ public class MyBotMain {
                         if (line.toString().equals("go")) {
                             PlanetWars pw = new PlanetWars(message.toString());
                             bot.turn(pw);
-
                             pw.FinishTurn();
                             message = new StringBuffer();
                         } else {

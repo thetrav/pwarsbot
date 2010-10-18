@@ -29,7 +29,6 @@ public class Bot {
 
         capturePlanets(3);
 
-        LOG.info("completed turn");
     }
 
     private void defendPlanets() {
@@ -37,10 +36,16 @@ public class Bot {
             Planet dest = input.GetPlanet(f.DestinationPlanet());
             if(dest.Owner() == MY_PLAYER_ID) {
 //                LOG.info("planet:"+dest.PlanetID() + " under attack");
-                int shipsGrownByArrival = f.TurnsRemaining() * dest.GrowthRate() + myShipsEnRoute(dest, f.TurnsRemaining());
-                if(shipsGrownByArrival <= f.NumShips())
+                int shipsOnPlanet =availableShips(dest);
+                int shipsGrownByArrival = f.TurnsRemaining() * dest.GrowthRate();
+                int shipsEnRoute = myShipsEnRoute(dest, f.TurnsRemaining());
+                int shipsOnArrival = shipsOnPlanet + shipsGrownByArrival + shipsEnRoute;
+                if(shipsOnArrival < f.NumShips())
                 {
-                    int deficit = f.NumShips() - shipsGrownByArrival - dest.NumShips();
+                    int deficit = f.NumShips() - shipsOnArrival;
+                    if(deficit <= 0) {
+                        LOG.info(f.NumShips() + " incoming, when they arrive we will only have "+shipsOnArrival + " defenders, need "+deficit+" reinforcements");
+                    }
                     BattleGroup battleGroup = findReinforcements(deficit, dest, f.TurnsRemaining());
                     if(battleGroup.count < deficit) {
                         //planet is probably fucked, use that to your advantage
@@ -57,7 +62,6 @@ public class Bot {
         List<Planet> potentials = input.NotMyPlanets();
         sortByDistanceToNearestAlly(potentials);
         for(int i=0; i< targets; i++) {
-            LOG.info("target:"+i);
             Planet target = potentials.get(i);
             if(!capturePlanet(target)) {
                 return; 
@@ -66,16 +70,13 @@ public class Bot {
     }
 
     private boolean capturePlanet(Planet target) {
-//        LOG.info("target found id"+target.PlanetID());
         if(target.Owner() == NO_PLAYER_ID) {
-            BattleGroup invasion = findReinforcements(target.NumShips(), target, 10000);
-            if(invasion.count >= target.NumShips()) {
-                LOG.info("destroying pathetic neutrals");
+            int neededShips = target.NumShips() + 1;
+            BattleGroup invasion = findReinforcements(neededShips, target, 10000);
+            if(invasion.count >= neededShips) {
                 invasion.dispatch(target);
-                LOG.info("done");
                 return true;
             } else {
-//                LOG.info("target too well defended can only muster" + invasion.count+" ships but need "+target.NumShips());
                 return false;
             }
         } else {
@@ -86,15 +87,12 @@ public class Bot {
             if(ships > 0) {
                 BattleGroup invasion = findReinforcements(ships, target, etaForBackup);
                 if(invasion.count >= ships) {
-//                    LOG.info("crush the opposition!");
                     invasion.dispatch(target);
                     return true;
                 } else {
-//                    LOG.info("curse their black hearts, another day perhaps");
                     return false;
                 }
             } else {
-//                LOG.info("their fate is already sealed");
                 return false;
             }
         }
@@ -140,7 +138,8 @@ public class Bot {
 
     private void assignShips(int required, List<Planet> sources, BattleGroup group) {
         for(Planet p : sources) {
-            int ships = p.NumShips();
+            int ships = availableShips(p);
+            if(ships <= 0) continue;
             if(ships < required) {
 //                LOG.info("adding all ships");
                 group.addShips(p, ships);
@@ -234,6 +233,7 @@ public class Bot {
         int count = 0;
         List<Pair> ships = new LinkedList<Pair>();
         public void addShips(Planet p, int s) {
+            if(s <= 0) throw new IllegalArgumentException("must add a positive number of ships: " + s);
             ships.add(new Pair(p,s));
             count+= s;
         }
@@ -289,7 +289,7 @@ public class Bot {
         Planet nearestTarget = null;
         Planet nearestSource = null;
         for (Planet p : input.NotMyPlanets()) {
-//            if(p.GrowthRate() > 0) {
+            if(p.GrowthRate() > 0) {
                 for (Planet mp : input.MyPlanets()) {
                     double distance = distance(p, mp);
                     if (distance < nearestDistance) {
@@ -297,7 +297,7 @@ public class Bot {
                         nearestSource = mp;
                         nearestTarget = p;
                     }
-//                }
+                }
             }
         }
         return new PotentialTarget(nearestTarget, nearestSource);

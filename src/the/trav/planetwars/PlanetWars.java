@@ -5,8 +5,10 @@ package the.trav.planetwars;// Contestants do not need to worry about anything i
 
 import java.util.*;
 import java.io.*;
+import java.util.logging.Logger;
 
 public class PlanetWars {
+    private static final Logger LOG = Logger.getLogger("PLANETWARS");
     // Constructs a PlanetWars object instance, given a string containing a
     // description of a game state.
     public PlanetWars(String gameStateString) {
@@ -161,14 +163,17 @@ public class PlanetWars {
     //   * the ships will take a few turns to reach their destination. Travel
     //     is not instant. See the Distance() function for more info.
     public void IssueOrder(Planet source, Planet dest, int numShips) {
-        System.out.println("" + source.PlanetID() + " " + dest.PlanetID() +
-          " " + numShips);
+        String out = "" + source.PlanetID() + " " + dest.PlanetID() +
+          " " + numShips;
+        LOG.info("ORDER:"+out);
+        System.out.println(out);
 	System.out.flush();
     }
 
     // Sends the game engine a message to let it know that we're done sending
     // orders. This signifies the end of our turn.
     public void FinishTurn() {
+    LOG.info("GO");
 	System.out.println("go");
 	System.out.flush();
     }
