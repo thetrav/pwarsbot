@@ -119,14 +119,5 @@ public class Ships {
         });
     }
 
-    public static double distanceToNearestEnemy(Planet source) {
-        double distance = Double.MAX_VALUE;
-        for(Planet enemy : PW.EnemyPlanets()) {
-            double d = distance(source, enemy);
-            if(d < distance) {
-                distance = d;
-            }
-        }
-        return distance;
-    }
+    
 }
